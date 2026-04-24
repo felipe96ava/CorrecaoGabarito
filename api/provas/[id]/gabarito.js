@@ -1,6 +1,30 @@
 import { neon } from '@neondatabase/serverless';
 import { withAuth } from '../../../lib/middleware.js';
 
+async function dispararReprocessamento(req, provaId) {
+  const secret = process.env.REPROCESS_WEBHOOK_SECRET;
+  if (!secret) return;
+
+  const proto = req.headers['x-forwarded-proto'] || 'http';
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  if (!host) return;
+
+  const url = `${proto}://${host}/api/webhooks/reprocess-prova`;
+
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-webhook-secret': secret,
+      },
+      body: JSON.stringify({ prova_id: provaId }),
+    });
+  } catch (err) {
+    console.error('[gabarito] Falha ao disparar reprocessamento:', err?.message || err);
+  }
+}
+
 async function handler(req, res) {
   const sql = neon(process.env.DATABASE_URL);
   const { id } = req.query;
@@ -27,6 +51,7 @@ async function handler(req, res) {
   }
 
   const salvo = await sql`SELECT * FROM gabarito WHERE prova_id = ${id} ORDER BY numero`;
+  await dispararReprocessamento(req, id);
   return res.status(200).json({ data: salvo, error: null });
 }
 

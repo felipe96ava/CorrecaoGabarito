@@ -58,6 +58,30 @@ export function useSalvarGabarito(provaId) {
   });
 }
 
+export function useOmrConfig(provaId) {
+  return useQuery({
+    queryKey: ['provas', provaId, 'omr'],
+    queryFn: async () => {
+      const { data } = await api.get(`/provas/${provaId}/omr`);
+      return data.data;
+    },
+    enabled: !!provaId,
+  });
+}
+
+export function useSalvarOmrConfig(provaId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (box_bolhas_1_20) => {
+      const { data } = await api.put(`/provas/${provaId}/omr`, { box_bolhas_1_20 });
+      return data.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['provas', provaId, 'omr'] });
+    },
+  });
+}
+
 export function useDeletarProva() {
   const qc = useQueryClient();
   return useMutation({

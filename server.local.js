@@ -1,5 +1,5 @@
 import { createServer } from 'http';
-import { readFileSync } from 'fs';
+import { readFileSync, statSync } from 'fs';
 import { pathToFileURL } from 'url';
 import path from 'path';
 
@@ -16,7 +16,9 @@ const ROOT = process.cwd();
 const ROTAS = [
   [/^\/auth\/login$/, 'api/auth/login.js', []],
   [/^\/auth\/register$/, 'api/auth/register.js', []],
+  [/^\/webhooks\/reprocess-prova$/, 'api/webhooks/reprocess-prova.js', []],
   [/^\/provas\/([^/]+)\/gabarito$/, 'api/provas/[id]/gabarito.js', ['id']],
+  [/^\/provas\/([^/]+)\/omr$/, 'api/provas/[id]/omr.js', ['id']],
   [/^\/provas\/([^/]+)$/, 'api/provas/[id].js', ['id']],
   [/^\/provas$/, 'api/provas/index.js', []],
   [/^\/alunos\/([^/]+)$/, 'api/alunos/[id].js', ['id']],
@@ -57,18 +59,22 @@ function decorarRes(res) {
 const cache = {};
 
 async function carregarHandler(arquivo) {
-  if (!cache[arquivo]) {
-    const url = pathToFileURL(path.join(ROOT, arquivo)).href;
+  const fullPath = path.join(ROOT, arquivo);
+  const mtimeMs = statSync(fullPath).mtimeMs;
+  const cacheKey = `${arquivo}:${mtimeMs}`;
+
+  if (!cache[cacheKey]) {
+    const url = `${pathToFileURL(fullPath).href}?v=${mtimeMs}`;
     const mod = await import(url);
-    cache[arquivo] = mod.default;
+    cache[cacheKey] = mod.default;
   }
-  return cache[arquivo];
+  return cache[cacheKey];
 }
 
 const server = createServer(async (req, res) => {
   decorarRes(res);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-webhook-secret');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 
   if (req.method === 'OPTIONS') {

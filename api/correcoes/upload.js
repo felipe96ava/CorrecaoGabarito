@@ -36,7 +36,8 @@ async function handler(req, res) {
 
   const secoes = await sql`SELECT * FROM secoes WHERE prova_id = ${prova_id} ORDER BY ordem`;
   const gabarito = await sql`SELECT * FROM gabarito WHERE prova_id = ${prova_id} ORDER BY numero`;
-  const jsonProva = { ...prova, secoes, gabarito };
+  const [omr_config] = await sql`SELECT * FROM omr_config WHERE prova_id = ${prova_id}`;
+  const jsonProva = { ...prova, secoes, gabarito, omr_config: omr_config || null };
 
   const buffer = fs.readFileSync(arquivo.filepath);
   const imagemBase64 = buffer.toString('base64');
@@ -81,7 +82,7 @@ async function handler(req, res) {
       respostas_aluno, correcao_questoes, resultado_secoes,
       total_acertos, nota, status, observacoes
     ) VALUES (
-      ${prova_id}, ${aluno_id}, ${!!dados.nome}, ${!!dados.nome}, ${fonte},
+      ${prova_id}, ${aluno_id}, ${!!resultado.qrcode_lido}, ${!!resultado.qrcode_valido}, ${fonte},
       ${JSON.stringify(resultado.respostas_aluno)},
       ${JSON.stringify(resultado.correcao_questoes)},
       ${JSON.stringify(resultado.resultado_secoes)},

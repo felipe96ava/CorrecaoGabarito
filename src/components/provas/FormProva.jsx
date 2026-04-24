@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import TabelaSecoes from './TabelaSecoes.jsx';
 import GridGabarito from './GridGabarito.jsx';
 
@@ -6,19 +6,34 @@ const ETAPAS = ['1º Bimestre', '2º Bimestre', '3º Bimestre', '4º Bimestre', 
 const MODALIDADES = ['Regular', 'EJA', 'Técnico'];
 
 export default function FormProva({ provaInicial, onSalvar, loading }) {
-  const [form, setForm] = useState({
-    nome: provaInicial?.nome || '',
-    unidade: provaInicial?.unidade || '',
-    ano_escolar: provaInicial?.ano_escolar || '',
-    modalidade: provaInicial?.modalidade || '',
-    etapa: provaInicial?.etapa || '',
-    caderno: provaInicial?.caderno || '',
-    data_prova: provaInicial?.data_prova || '',
-    total_questoes: provaInicial?.total_questoes || 20,
-    alternativas: provaInicial?.alternativas || 'A-E',
-  });
+  const provaKey = provaInicial?.id ?? null;
+
+  const initialForm = useMemo(() => {
+    const rawDate = provaInicial?.data_prova || '';
+    const normalizedDate = typeof rawDate === 'string' ? rawDate.split('T')[0] : '';
+    return {
+      nome: provaInicial?.nome || '',
+      unidade: provaInicial?.unidade || '',
+      ano_escolar: provaInicial?.ano_escolar || '',
+      modalidade: provaInicial?.modalidade || '',
+      etapa: provaInicial?.etapa || '',
+      caderno: provaInicial?.caderno || '',
+      data_prova: normalizedDate,
+      total_questoes: provaInicial?.total_questoes || 20,
+      alternativas: provaInicial?.alternativas || 'A-E',
+    };
+  }, [provaKey, provaInicial]);
+
+  const [form, setForm] = useState(initialForm);
   const [secoes, setSecoes] = useState(provaInicial?.secoes || []);
   const [gabarito, setGabarito] = useState(provaInicial?.gabarito || []);
+
+  useEffect(() => {
+    if (!provaInicial) return;
+    setForm(initialForm);
+    setSecoes(provaInicial?.secoes || []);
+    setGabarito(provaInicial?.gabarito || []);
+  }, [provaKey, provaInicial, initialForm]);
 
   function set(field) {
     return (e) => setForm({ ...form, [field]: e.target.value });
