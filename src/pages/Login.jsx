@@ -9,6 +9,13 @@ export default function Login() {
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
 
+  function formatError(err) {
+    const apiErr = err?.response?.data?.error;
+    if (typeof apiErr === 'string') return apiErr;
+    if (apiErr && typeof apiErr === 'object') return apiErr.message || JSON.stringify(apiErr);
+    return err?.message || 'Erro ao fazer login';
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setErro('');
@@ -17,7 +24,7 @@ export default function Login() {
       await login(form.email, form.senha);
       navigate('/');
     } catch (err) {
-      setErro(err.response?.data?.error || 'Erro ao fazer login');
+      setErro(formatError(err));
     } finally {
       setLoading(false);
     }
