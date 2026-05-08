@@ -10,7 +10,7 @@
     }
   ],
   "functions": {
-    "api/[...path].js": { "runtime": "nodejs20.x", "maxDuration": 30 },
-    "api/**/*.js": { "runtime": "nodejs20.x", "maxDuration": 30 }
+    "api/[...path].js": { "maxDuration": 30 },
+    "api/**/*.js": { "maxDuration": 30 }
   }
 }
