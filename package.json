@@ -9,6 +9,7 @@
     "dev": "vite",
     "api": "node server.local.js",
     "migrate": "node scripts/migrate.js",
+    "reset-password": "node scripts/reset-password.js",
     "build": "vite build",
     "preview": "vite preview"
   },
