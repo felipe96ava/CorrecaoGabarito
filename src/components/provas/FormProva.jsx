@@ -28,12 +28,15 @@ export default function FormProva({ provaInicial, onSalvar, loading }) {
   const [secoes, setSecoes] = useState(provaInicial?.secoes || []);
   const [gabarito, setGabarito] = useState(provaInicial?.gabarito || []);
 
+  // Sincroniza só ao trocar de prova (id). Não reagir a refetch do React Query,
+  // senão secoes/gabarito digitados pelo usuário são apagados antes do salvar.
   useEffect(() => {
-    if (!provaInicial) return;
+    if (!provaKey || !provaInicial) return;
     setForm(initialForm);
-    setSecoes(provaInicial?.secoes || []);
-    setGabarito(provaInicial?.gabarito || []);
-  }, [provaKey, provaInicial, initialForm]);
+    setSecoes(provaInicial.secoes || []);
+    setGabarito(provaInicial.gabarito || []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initialForm derivado de provaKey
+  }, [provaKey]);
 
   function set(field) {
     return (e) => setForm({ ...form, [field]: e.target.value });

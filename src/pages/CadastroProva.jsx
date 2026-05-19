@@ -17,14 +17,28 @@ export default function CadastroProva() {
 
   const loading = criar.isPending || atualizar.isPending || salvarGabarito.isPending;
 
+  function normalizarSecoes(secoes) {
+    return (secoes || []).map((s) => ({
+      nome: String(s.nome ?? '').trim(),
+      questao_de: Number(s.questao_de),
+      questao_ate: Number(s.questao_ate),
+    }));
+  }
+
   async function handleSalvar({ gabarito, secoes, ...campos }) {
-    if (id) {
-      await atualizar.mutateAsync({ id, ...campos, secoes });
-      if (gabarito?.length > 0) await salvarGabarito.mutateAsync(gabarito);
-    } else {
-      await criar.mutateAsync({ ...campos, gabarito, secoes });
+    const secoesPayload = normalizarSecoes(secoes);
+    try {
+      if (id) {
+        await atualizar.mutateAsync({ id, ...campos, secoes: secoesPayload });
+        if (gabarito?.length > 0) await salvarGabarito.mutateAsync(gabarito);
+      } else {
+        await criar.mutateAsync({ ...campos, gabarito, secoes: secoesPayload });
+      }
+      navigate('/provas');
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || 'Erro ao salvar a prova';
+      alert(typeof msg === 'string' ? msg : 'Erro ao salvar a prova');
     }
-    navigate('/provas');
   }
 
   if (id && isLoadingProva) {
