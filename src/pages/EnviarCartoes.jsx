@@ -18,7 +18,7 @@ export default function EnviarCartoes() {
   const { data: provas = [] } = useProvas();
   const [provaId, setProvaId] = useState('');
   const upload = useUploadCartao();
-  const { data: correcoes = [] } = useCorrecoes(provaId || undefined);
+  const { data: correcoes = [] } = useCorrecoes(provaId || undefined, { requireProva: true });
   const { data: omrConfig, isLoading: loadingOmr } = useOmrConfig(provaId || undefined);
 
   const provaSelecionada = provas.find((p) => p.id === provaId);
@@ -213,9 +213,9 @@ export default function EnviarCartoes() {
         </div>
       )}
 
-      {correcoes.length > 0 && (
+      {provaId && correcoes.length > 0 && (
         <div className="mt-8">
-          <h2 className="text-lg font-semibold text-gray-700 mb-3">Cartões processados</h2>
+          <h2 className="text-lg font-semibold text-gray-700 mb-3">Cartões processados desta prova</h2>
           <FilaProcessamento correcoes={correcoes} />
         </div>
       )}

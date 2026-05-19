@@ -26,13 +26,11 @@ function calcularSecoesDeQuestoes(correcao, secoesProva) {
       return { secao: s.nome || 'Seção', acertos: 0, total: 0, percentual: 0 };
     }
 
+    const total = ate - de + 1;
     let acertos = 0;
-    let total = 0;
     for (let q = de; q <= ate; q++) {
       const item = correcaoQuestoes[String(q)];
-      if (!item) continue;
-      total += 1;
-      if (item.resultado === 'ACERTO') acertos += 1;
+      if (item?.resultado === 'ACERTO') acertos += 1;
     }
     const percentual = total > 0 ? Math.round((acertos / total) * 100) : 0;
     return { secao: s.nome || 'Seção', acertos, total, percentual };
@@ -52,19 +50,19 @@ function corTexto(p) {
 }
 
 export default function ListaSecoesAluno({ correcao, secoesProva }) {
-  const salvo = parseResultadoSecoes(correcao).filter((s) => s && (s.total > 0 || s.percentual != null));
+  const salvo = parseResultadoSecoes(correcao).filter((s) => s && s.secao);
   const provaTemSecoes = Array.isArray(secoesProva) && secoesProva.length > 0;
   const soGeralSalvo = salvo.length === 1 && salvo[0].secao === 'Geral';
 
-  // Se a prova tem matérias hoje, usa elas (mesmo que o cartão tenha sido corrigido
-  // antes das seções existirem e ficou gravado só como "Geral").
+  // Com matérias na prova, sempre recalcula a partir delas (lista completa).
+  // Usa o salvo só se a prova não tiver seções (ex.: bloco único "Geral").
   let secoes;
-  if (provaTemSecoes && (salvo.length === 0 || soGeralSalvo)) {
-    secoes = calcularSecoesDeQuestoes(correcao, secoesProva).filter((s) => s.total > 0);
+  if (provaTemSecoes) {
+    secoes = calcularSecoesDeQuestoes(correcao, secoesProva);
   } else if (salvo.length > 0) {
     secoes = salvo;
   } else {
-    secoes = calcularSecoesDeQuestoes(correcao, secoesProva).filter((s) => s.total > 0);
+    secoes = [];
   }
 
   if (secoes.length === 0) {

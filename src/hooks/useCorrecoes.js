@@ -2,14 +2,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api.js';
 import { pdfParaImagem } from '../utils/pdfParaImagem.js';
 
-export function useCorrecoes(provaId) {
+export function useCorrecoes(provaId, { enabled = true, requireProva = false } = {}) {
   return useQuery({
-    queryKey: ['correcoes', provaId],
+    queryKey: ['correcoes', provaId ?? null],
     queryFn: async () => {
       const params = provaId ? { prova_id: provaId } : {};
       const { data } = await api.get('/correcoes', { params });
       return data.data;
     },
+    enabled: enabled && (!requireProva || !!provaId),
   });
 }
 
