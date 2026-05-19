@@ -52,8 +52,18 @@ function corTexto(p) {
 }
 
 export default function ListaSecoesAluno({ correcao, secoesProva }) {
-  let secoes = parseResultadoSecoes(correcao).filter((s) => s && (s.total > 0 || s.percentual != null));
-  if (secoes.length === 0) {
+  const salvo = parseResultadoSecoes(correcao).filter((s) => s && (s.total > 0 || s.percentual != null));
+  const provaTemSecoes = Array.isArray(secoesProva) && secoesProva.length > 0;
+  const soGeralSalvo = salvo.length === 1 && salvo[0].secao === 'Geral';
+
+  // Se a prova tem matérias hoje, usa elas (mesmo que o cartão tenha sido corrigido
+  // antes das seções existirem e ficou gravado só como "Geral").
+  let secoes;
+  if (provaTemSecoes && (salvo.length === 0 || soGeralSalvo)) {
+    secoes = calcularSecoesDeQuestoes(correcao, secoesProva).filter((s) => s.total > 0);
+  } else if (salvo.length > 0) {
+    secoes = salvo;
+  } else {
     secoes = calcularSecoesDeQuestoes(correcao, secoesProva).filter((s) => s.total > 0);
   }
 
