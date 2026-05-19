@@ -19,7 +19,7 @@ export default function CadastroProva() {
 
   async function handleSalvar({ gabarito, secoes, ...campos }) {
     if (id) {
-      await atualizar.mutateAsync({ id, ...campos });
+      await atualizar.mutateAsync({ id, ...campos, secoes });
       if (gabarito?.length > 0) await salvarGabarito.mutateAsync(gabarito);
     } else {
       await criar.mutateAsync({ ...campos, gabarito, secoes });
