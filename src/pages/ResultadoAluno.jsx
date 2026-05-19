@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCorrecao } from '../hooks/useCorrecoes.js';
+import { useProva } from '../hooks/useProvas.js';
 import GridQuestoes from '../components/resultados/GridQuestoes.jsx';
+import ListaSecoesAluno from '../components/resultados/ListaSecoesAluno.jsx';
 
 export default function ResultadoAluno() {
   const { alunoId } = useParams();
   const { data: correcao, isLoading } = useCorrecao(alunoId);
+  const { data: prova } = useProva(correcao?.prova_id);
   const [verDebug, setVerDebug] = useState(false);
   const [verObs, setVerObs] = useState(false);
 
@@ -39,6 +42,8 @@ export default function ResultadoAluno() {
           </p>
         </div>
       </div>
+
+      <ListaSecoesAluno correcao={correcao} secoesProva={prova?.secoes} />
 
       <GridQuestoes correcaoQuestoes={correcao.correcao_questoes} />
 
